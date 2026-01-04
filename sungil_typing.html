@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>자바프로그래밍 타자연습</title>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+<style>
+body {
+    font-family: "Noto Sans KR", Arial, sans-serif;
+    background: #eef1f5;
+    text-align: center;
+    padding: 30px;
+}
+
+#captureArea, #finalScreen {
+    background: white;
+    width: 720px;
+    margin: auto;
+    padding: 25px;
+    border-radius: 14px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+
+.school { font-size: 15px; color: #555; }
+h1 { margin: 5px 0 20px; }
+
+.info-box input {
+    width: 90px;
+    padding: 8px;
+    margin: 0 5px;
+    text-align: center;
+}
+
+button {
+    padding: 10px 24px;
+    margin-top: 15px;
+    border-radius: 8px;
+    border: none;
+    background: #4a6cf7;
+    color: white;
+    cursor: pointer;
+    font-size: 15px;
+}
+
+#game {
+    position: relative;
+    width: 640px;
+    height: 320px;
+    margin: 20px auto;
+    background: #f9fafc;
+    border: 2px solid #dcdfe6;
+    border-radius: 10px;
+}
+
+.word {
+    position: absolute;
+    background: #e6ebff;
+    padding: 4px 8px;
+    border-radius: 6px;
+}
+
+#input {
+    width: 360px;
+    padding: 10px;
+    font-size: 15px;
+}
+
+#finalScreen { display: none; }
+.explain { text-align: left; margin-top: 20px; }
+.explain p { margin: 8px 0; }
+.praise {
+    margin-top: 20px;
+    font-size: 18px;
+    color: #2e7d32;
+    font-weight: bold;
+}
+</style>
+</head>
+<body>
+
+<div id="captureArea">
+    <div class="school">성일정보고등학교</div>
+    <h1>자바프로그래밍 타자연습</h1>
+
+    <div class="info-box">
+        반 <input id="classNum" type="number" min="9" max="12">
+        번호 <input id="studentNum" type="number" min="1" max="25">
+        이름 <input id="studentName" maxlength="4">
+    </div>
+
+    <button onclick="startGame()">시작</button>
+
+    <div id="game"></div>
+
+    <input id="input" placeholder="단어 입력" disabled>
+
+    <div>
+        점수 <span id="score">0</span> |
+        시간 <span id="time">90</span>초
+    </div>
+</div>
+
+<div id="finalScreen">
+    <h2>👏 오늘의 학습 정리 👏</h2>
+
+    <div class="explain">
+        <p>📌 <b>class</b> : 자바 프로그램의 설계도</p>
+        <p>📌 <b>public static void main</b> : 프로그램의 시작 버튼</p>
+        <p>📌 <b>if / for / while</b> : 조건과 반복을 처리하는 핵심 문법</p>
+        <p>📌 <b>ArrayList / HashMap</b> : 데이터를 효율적으로 저장하는 도구</p>
+        <p>📌 <b>try / catch</b> : 오류를 안전하게 처리하는 보호 장치</p>
+    </div>
+
+    <div class="praise" id="praiseText"></div>
+
+    <button onclick="location.reload()">재시도</button>
+</div>
+
+<script>
+const words=["class","public","static","void","int","if","for","while","ArrayList","HashMap","try","catch"];
+let score=0,time=90,timer,spawner,startTime,activeWords=[];
+const game=document.getElementById("game");
+const input=document.getElementById("input");
+
+function startGame(){
+    score=0; time=90; activeWords=[];
+    game.innerHTML=""; input.disabled=false; input.value=""; input.focus();
+    startTime=Date.now();
+
+    timer=setInterval(()=>{
+        document.getElementById("time").textContent=--time;
+        if(time<=0) endGame();
+    },1000);
+
+    spawner=setInterval(spawnWord,900);
+}
+
+function spawnWord(){
+    if(activeWords.length>=6) return;
+    const word=words[Math.floor(Math.random()*words.length)];
+    if(activeWords.includes(word)) return;
+    activeWords.push(word);
+
+    const div=document.createElement("div");
+    div.className="word";
+    div.textContent=word;
+    div.style.left=Math.random()*560+"px";
+    div.style.top=Math.random()*280+"px";
+    game.appendChild(div);
+}
+
+input.addEventListener("input",()=>{
+    const val=input.value.trim();
+    const idx=activeWords.indexOf(val);
+    if(idx>-1){
+        activeWords.splice(idx,1);
+        [...document.querySelectorAll(".word")].find(w=>w.textContent===val).remove();
+        score++; document.getElementById("score").textContent=score;
+        input.value="";
+    }
+});
+
+function endGame(){
+    clearInterval(timer); clearInterval(spawner);
+    input.disabled=true;
+
+    html2canvas(document.getElementById("captureArea")).then(()=>{
+        document.getElementById("captureArea").style.display="none";
+        document.getElementById("finalScreen").style.display="block";
+        document.getElementById("praiseText").textContent =
+        "끝까지 집중해서 도전한 모습이 정말 훌륭합니다! 👏 " +
+        "자바 문법에 대한 이해력과 성실한 태도가 잘 드러났어요. " +
+        "이런 자세라면 프로그래밍 실력이 계속 성장할 수밖에 없습니다! 🌟";
+    });
+}
+</script>
+
+</body>
+</html>
