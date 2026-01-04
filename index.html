@@ -22,8 +22,14 @@ body {
     box-shadow: 0 8px 20px rgba(0,0,0,0.08);
 }
 
-.school { font-size: 15px; color: #555; }
-h1 { margin: 5px 0 20px; }
+.school {
+    font-size: 15px;
+    color: #555;
+}
+
+h1 {
+    margin: 6px 0 20px;
+}
 
 .info-box input {
     width: 90px;
@@ -33,7 +39,7 @@ h1 { margin: 5px 0 20px; }
 }
 
 button {
-    padding: 10px 24px;
+    padding: 10px 26px;
     margin-top: 15px;
     border-radius: 8px;
     border: none;
@@ -58,6 +64,7 @@ button {
     background: #e6ebff;
     padding: 4px 8px;
     border-radius: 6px;
+    font-size: 16px;
 }
 
 #input {
@@ -66,17 +73,28 @@ button {
     font-size: 15px;
 }
 
-#finalScreen { display: none; }
-.explain { text-align: left; margin-top: 20px; }
-.explain p { margin: 8px 0; }
-.praise {
+#finalScreen {
+    display: none;
+}
+
+.explain {
+    text-align: left;
     margin-top: 20px;
+}
+
+.explain p {
+    margin: 8px 0;
+}
+
+.praise {
+    margin-top: 22px;
     font-size: 18px;
     color: #2e7d32;
     font-weight: bold;
 }
 </style>
 </head>
+
 <body>
 
 <div id="captureArea">
@@ -97,19 +115,19 @@ button {
 
     <div>
         점수 <span id="score">0</span> |
-        시간 <span id="time">90</span>초
+        남은 시간 <span id="time">90</span>초
     </div>
 </div>
 
 <div id="finalScreen">
-    <h2>👏 오늘의 학습 정리 👏</h2>
+    <h2>📘 오늘의 자바 학습 정리</h2>
 
     <div class="explain">
-        <p>📌 <b>class</b> : 자바 프로그램의 설계도</p>
-        <p>📌 <b>public static void main</b> : 프로그램의 시작 버튼</p>
-        <p>📌 <b>if / for / while</b> : 조건과 반복을 처리하는 핵심 문법</p>
-        <p>📌 <b>ArrayList / HashMap</b> : 데이터를 효율적으로 저장하는 도구</p>
-        <p>📌 <b>try / catch</b> : 오류를 안전하게 처리하는 보호 장치</p>
+        <p>✔ <b>class</b> : 자바 프로그램의 설계도</p>
+        <p>✔ <b>public static void main</b> : 프로그램이 시작되는 곳</p>
+        <p>✔ <b>if / for / while</b> : 조건 판단과 반복 처리</p>
+        <p>✔ <b>ArrayList / HashMap</b> : 데이터를 저장하는 구조</p>
+        <p>✔ <b>try / catch</b> : 오류를 안전하게 처리하는 방법</p>
     </div>
 
     <div class="praise" id="praiseText"></div>
@@ -118,60 +136,116 @@ button {
 </div>
 
 <script>
-const words=["class","public","static","void","int","if","for","while","ArrayList","HashMap","try","catch"];
-let score=0,time=90,timer,spawner,startTime,activeWords=[];
-const game=document.getElementById("game");
-const input=document.getElementById("input");
+const words = [
+"class","public","static","void","int","double","boolean",
+"if","else","for","while",
+"ArrayList","HashMap","Scanner",
+"try","catch","finally","throw","Exception",
+"thread","Runnable"
+];
 
-function startGame(){
-    score=0; time=90; activeWords=[];
-    game.innerHTML=""; input.disabled=false; input.value=""; input.focus();
-    startTime=Date.now();
+const game = document.getElementById("game");
+const input = document.getElementById("input");
+const scoreEl = document.getElementById("score");
+const timeEl = document.getElementById("time");
 
-    timer=setInterval(()=>{
-        document.getElementById("time").textContent=--time;
-        if(time<=0) endGame();
-    },1000);
+const classNum = document.getElementById("classNum");
+const studentNum = document.getElementById("studentNum");
+const studentName = document.getElementById("studentName");
 
-    spawner=setInterval(spawnWord,900);
+let score = 0;
+let time = 90;
+let timer, spawner;
+let activeWords = [];
+
+function validInfo() {
+    return classNum.value >= 9 && classNum.value <= 12 &&
+           studentNum.value >= 1 && studentNum.value <= 25 &&
+           /^[가-힣]{1,4}$/.test(studentName.value);
 }
 
-function spawnWord(){
-    if(activeWords.length>=6) return;
-    const word=words[Math.floor(Math.random()*words.length)];
-    if(activeWords.includes(word)) return;
+function startGame() {
+    if (!validInfo()) {
+        alert("반(9~12), 번호(1~25), 이름(한글 4자 이내)을 정확히 입력하세요.");
+        return;
+    }
+
+    score = 0;
+    time = 90;
+    activeWords = [];
+    game.innerHTML = "";
+    scoreEl.textContent = score;
+    timeEl.textContent = time;
+
+    input.disabled = false;
+    input.value = "";
+    input.focus();
+
+    timer = setInterval(() => {
+        time--;
+        timeEl.textContent = time;
+        if (time <= 0) endGame();
+    }, 1000);
+
+    spawner = setInterval(spawnWord, 900);
+}
+
+function spawnWord() {
+    if (activeWords.length >= 6) return;
+
+    let word;
+    do {
+        word = words[Math.floor(Math.random() * words.length)];
+    } while (activeWords.includes(word));
+
     activeWords.push(word);
 
-    const div=document.createElement("div");
-    div.className="word";
-    div.textContent=word;
-    div.style.left=Math.random()*560+"px";
-    div.style.top=Math.random()*280+"px";
+    const div = document.createElement("div");
+    div.className = "word";
+    div.textContent = word;
+    div.style.left = Math.random() * 560 + "px";
+    div.style.top = Math.random() * 280 + "px";
     game.appendChild(div);
 }
 
-input.addEventListener("input",()=>{
-    const val=input.value.trim();
-    const idx=activeWords.indexOf(val);
-    if(idx>-1){
-        activeWords.splice(idx,1);
-        [...document.querySelectorAll(".word")].find(w=>w.textContent===val).remove();
-        score++; document.getElementById("score").textContent=score;
-        input.value="";
+input.addEventListener("input", () => {
+    const value = input.value.trim();
+    const index = activeWords.indexOf(value);
+    if (index !== -1) {
+        activeWords.splice(index, 1);
+        [...document.querySelectorAll(".word")]
+            .find(w => w.textContent === value).remove();
+        score++;
+        scoreEl.textContent = score;
+        input.value = "";
     }
 });
 
-function endGame(){
-    clearInterval(timer); clearInterval(spawner);
-    input.disabled=true;
+function endGame() {
+    clearInterval(timer);
+    clearInterval(spawner);
+    input.disabled = true;
 
-    html2canvas(document.getElementById("captureArea")).then(()=>{
-        document.getElementById("captureArea").style.display="none";
-        document.getElementById("finalScreen").style.display="block";
+    html2canvas(document.getElementById("captureArea")).then(canvas => {
+        const now = new Date();
+        const date =
+            now.getFullYear() + "-" +
+            String(now.getMonth() + 1).padStart(2, "0") + "-" +
+            String(now.getDate()).padStart(2, "0");
+
+        const link = document.createElement("a");
+        link.download =
+            `${classNum.value}반_${studentNum.value}번_${studentName.value}_${date}.png`;
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+
+        document.getElementById("captureArea").style.display = "none";
+        document.getElementById("finalScreen").style.display = "block";
+
         document.getElementById("praiseText").textContent =
-        "끝까지 집중해서 도전한 모습이 정말 훌륭합니다! 👏 " +
-        "자바 문법에 대한 이해력과 성실한 태도가 잘 드러났어요. " +
-        "이런 자세라면 프로그래밍 실력이 계속 성장할 수밖에 없습니다! 🌟";
+            "90초 동안 끝까지 집중하며 도전한 모습이 정말 훌륭합니다! 👏 " +
+            "자바 핵심 키워드를 성실하게 입력하며 학습에 임하는 태도가 인상적이었어요. " +
+            "이런 꾸준함은 분명 큰 실력으로 이어질 것입니다! 🌟";
     });
 }
 </script>
