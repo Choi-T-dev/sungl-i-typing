@@ -37,7 +37,7 @@ h1 { margin: 6px 0 20px; }
 
 button {
     padding: 10px 26px;
-    margin-top: 15px;
+    margin: 0 5px;
     border-radius: 12px;
     border: none;
     background: #4a6cf7;
@@ -106,12 +106,9 @@ button {
     <h1>자바프로그래밍 타자연습</h1>
 
     <div class="info-box">
-        반 <input id="classNum" type="number" min="9" max="12">
-        번호 <input id="studentNum" type="number" min="1" max="25">
         이름 <input id="studentName" maxlength="4">
+        <button onclick="startGame()">시작</button>
     </div>
-
-    <button onclick="startGame()">시작</button>
 
     <div id="game"></div>
     <input id="input" placeholder="단어 입력" disabled>
@@ -159,8 +156,6 @@ const resultBox = document.getElementById("resultBox");
 const finalResultBox = document.getElementById("finalResultBox");
 const praiseText = document.getElementById("praiseText");
 
-const classNum = document.getElementById("classNum");
-const studentNum = document.getElementById("studentNum");
 const studentName = document.getElementById("studentName");
 
 let score = 0;
@@ -170,14 +165,12 @@ let activeWords = [];
 let startTime = 0;
 
 function validInfo() {
-    return classNum.value >= 9 && classNum.value <= 12 &&
-           studentNum.value >= 1 && studentNum.value <= 25 &&
-           /^[가-힣]{1,4}$/.test(studentName.value);
+    return /^[가-힣]{1,4}$/.test(studentName.value);
 }
 
 function startGame() {
     if (!validInfo()) {
-        alert("반(9~12), 번호(1~25), 이름(한글 4자 이내)을 정확히 입력하세요.");
+        alert("이름(한글 4자 이내)을 정확히 입력하세요.");
         return;
     }
 
@@ -240,7 +233,7 @@ function endGame() {
     const wpm = Math.round((score / elapsedSec) * 60);
 
     // 🔹 첫 화면 박스 업데이트 및 보이기
-    resultBox.textContent = `반: ${classNum.value} | 번호: ${studentNum.value} | 이름: ${studentName.value} | 점수: ${score}점 | 속도: ${wpm} WPM`;
+    resultBox.textContent = `이름: ${studentName.value} | 점수: ${score}점 | 속도: ${wpm} WPM`;
     resultBox.style.display = "block";
 
     html2canvas(document.getElementById("captureArea")).then(canvas => {
@@ -251,8 +244,7 @@ function endGame() {
             String(now.getDate()).padStart(2,"0");
 
         const link = document.createElement("a");
-        link.download =
-            `${classNum.value}반_${studentNum.value}번_${studentName.value}_${date}.png`;
+        link.download = `${studentName.value}_${date}.png`;
         link.href = canvas.toDataURL("image/png");
         link.click();
 
@@ -261,7 +253,7 @@ function endGame() {
         document.getElementById("finalScreen").style.display="block";
 
         // 🔹 다음 화면 박스에도 동일하게 표시
-        finalResultBox.textContent = `반: ${classNum.value} | 번호: ${studentNum.value} | 이름: ${studentName.value} | 점수: ${score}점 | 속도: ${wpm} WPM`;
+        finalResultBox.textContent = `이름: ${studentName.value} | 점수: ${score}점 | 속도: ${wpm} WPM`;
         finalResultBox.style.display = "block";
 
         praiseText.textContent =
@@ -274,4 +266,3 @@ function endGame() {
 
 </body>
 </html>
-
