@@ -37,7 +37,7 @@ h1 { margin: 6px 0 20px; }
 
 button {
     padding: 10px 26px;
-    margin: 0 5px;
+    margin-top: 15px;
     border-radius: 12px;
     border: none;
     background: #4a6cf7;
@@ -72,7 +72,6 @@ button {
     border: 1px solid #ccc;
 }
 
-/* 결과/점수 박스 */
 .resultBox {
     background-color: rgba(74,108,247,0.2);
     border: 2px solid #4a6cf7;
@@ -82,7 +81,7 @@ button {
     border-radius: 12px;
     font-size: 16px;
     font-weight: bold;
-    display: none; /* 처음에는 숨김 */
+    display: none;
 }
 
 #finalScreen { display: none; }
@@ -106,9 +105,12 @@ button {
     <h1>자바프로그래밍 타자연습</h1>
 
     <div class="info-box">
+        반 <input id="classNum" type="number" min="9" max="12">
+        번호 <input id="studentNum" type="number" min="1" max="25">
         이름 <input id="studentName" maxlength="4">
-        <button onclick="startGame()">시작</button>
     </div>
+
+    <button onclick="startGame()">시작</button>
 
     <div id="game"></div>
     <input id="input" placeholder="단어 입력" disabled>
@@ -117,7 +119,6 @@ button {
         남은 시간 <span id="time">90</span>초
     </div>
 
-    <!-- 🔹 첫 화면 점수/속도 박스 -->
     <div id="resultBox" class="resultBox"></div>
 </div>
 
@@ -133,8 +134,6 @@ button {
     </div>
 
     <div class="praise" id="praiseText"></div>
-
-    <!-- 🔹 다음 화면에도 동일한 박스 표시 -->
     <div id="finalResultBox" class="resultBox"></div>
 
     <button onclick="location.reload()">재시도</button>
@@ -156,6 +155,8 @@ const resultBox = document.getElementById("resultBox");
 const finalResultBox = document.getElementById("finalResultBox");
 const praiseText = document.getElementById("praiseText");
 
+const classNum = document.getElementById("classNum");
+const studentNum = document.getElementById("studentNum");
 const studentName = document.getElementById("studentName");
 
 let score = 0;
@@ -164,13 +165,14 @@ let timer, spawner;
 let activeWords = [];
 let startTime = 0;
 
+/* ✅ 이름만 필수 */
 function validInfo() {
     return /^[가-힣]{1,4}$/.test(studentName.value);
 }
 
 function startGame() {
     if (!validInfo()) {
-        alert("이름(한글 4자 이내)을 정확히 입력하세요.");
+        alert("이름(한글 1~4자)만 정확히 입력하세요.");
         return;
     }
 
@@ -188,8 +190,8 @@ function startGame() {
     timer = setInterval(() => {
         time--;
         timeEl.textContent = time;
-        if(time <= 0) endGame();
-    },1000);
+        if (time <= 0) endGame();
+    }, 1000);
 
     spawner = setInterval(spawnWord, 900);
 }
@@ -216,9 +218,9 @@ input.addEventListener("input", () => {
     const value = input.value.trim();
     const index = activeWords.indexOf(value);
     if (index !== -1) {
-        activeWords.splice(index,1);
+        activeWords.splice(index, 1);
         [...document.querySelectorAll(".word")]
-            .find(w=>w.textContent===value).remove();
+            .find(w => w.textContent === value).remove();
         score++;
         input.value = "";
     }
@@ -229,37 +231,42 @@ function endGame() {
     clearInterval(spawner);
     input.disabled = true;
 
-    const elapsedSec = (Date.now() - startTime)/1000;
+    const elapsedSec = (Date.now() - startTime) / 1000;
     const wpm = Math.round((score / elapsedSec) * 60);
 
-    // 🔹 첫 화면 박스 업데이트 및 보이기
-    resultBox.textContent = `이름: ${studentName.value} | 점수: ${score}점 | 속도: ${wpm} WPM`;
+    const classText = classNum.value ? classNum.value + "반" : "반 미입력";
+    const numText = studentNum.value ? studentNum.value + "번" : "번호 미입력";
+
+    resultBox.textContent =
+        `${classText} | ${numText} | 이름: ${studentName.value} | 점수: ${score}점 | 속도: ${wpm} WPM`;
     resultBox.style.display = "block";
 
     html2canvas(document.getElementById("captureArea")).then(canvas => {
         const now = new Date();
         const date =
             now.getFullYear() + "-" +
-            String(now.getMonth() + 1).padStart(2,"0") + "-" +
-            String(now.getDate()).padStart(2,"0");
+            String(now.getMonth() + 1).padStart(2, "0") + "-" +
+            String(now.getDate()).padStart(2, "0");
+
+        const fileClass = classNum.value ? classNum.value + "반_" : "";
+        const fileNum = studentNum.value ? studentNum.value + "번_" : "";
 
         const link = document.createElement("a");
-        link.download = `${studentName.value}_${date}.png`;
+        link.download =
+            `${fileClass}${fileNum}${studentName.value}_${date}.png`;
         link.href = canvas.toDataURL("image/png");
         link.click();
 
-        // 🔹 다음 화면으로 이동
-        document.getElementById("captureArea").style.display="none";
-        document.getElementById("finalScreen").style.display="block";
+        document.getElementById("captureArea").style.display = "none";
+        document.getElementById("finalScreen").style.display = "block";
 
-        // 🔹 다음 화면 박스에도 동일하게 표시
-        finalResultBox.textContent = `이름: ${studentName.value} | 점수: ${score}점 | 속도: ${wpm} WPM`;
+        finalResultBox.textContent = resultBox.textContent;
         finalResultBox.style.display = "block";
 
         praiseText.textContent =
             "90초 동안 끝까지 집중하며 도전한 모습이 정말 훌륭합니다! 👏 " +
             "자바 핵심 키워드를 성실하게 입력하며 학습에 임하는 태도가 인상적이었어요. " +
-            "이런 꾸준함은 분명 큰 실력으로 이어질 것입니다!🌟";
+            "이런 꾸준함은 분명 큰 실력으로 이어질 것입니다! 🌟";
     });
 }
 </script>
